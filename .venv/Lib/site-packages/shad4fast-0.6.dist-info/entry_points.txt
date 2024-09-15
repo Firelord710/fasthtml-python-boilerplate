@@ -1,0 +1,2 @@
+[console_scripts]
+shad4fast = shad4fast.cli:main
