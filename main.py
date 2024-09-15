@@ -1,8 +1,8 @@
+import os
 from fasthtml.common import *
 from shad4fast import *
 from fasthtml.svg import Rect, Polyline, Path, Circle, Line
 from starlette.staticfiles import StaticFiles
-import os
 from dotenv import load_dotenv
 import resend
 from starlette.requests import Request
