@@ -6,6 +6,7 @@ from starlette.staticfiles import StaticFiles
 from dotenv import load_dotenv
 import resend
 from starlette.requests import Request
+from starlette.responses import RedirectResponse, JSONResponse
 
 print("Current working directory:", os.getcwd())
 print("Contents of .env file:")
@@ -34,36 +35,40 @@ app, rt = fast_app(
 )
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-@rt("/submit-contact", methods="POST")
+@rt("/submit-contact", methods=["GET", "POST"])
 async def submit_contact(request: Request):
-    form = await request.form()
-    name = form.get("name")
-    email = form.get("email")
-    message = form.get("message")
+    if request.method == "POST":
+        form = await request.form()
+        name = form.get("name")
+        email = form.get("email")
+        message = form.get("message")
 
-    if not all([name, email, message]):
-        return {"success": False, "message": "All fields are required."}
+        if not all([name, email, message]):
+            return JSONResponse({"success": False, "message": "All fields are required."})
 
-    try:
-        # Send email using Resend
-        params = {
-            "from": "Contact Form <contact@obsidian.bz>",
-            "to": "michael@obsidian.bz",
-            "subject": f"New Contact Form Submission from {name}",
-            "html": f"""
-                <h1>New Contact Form Submission</h1>
-                <p><strong>Name:</strong> {name}</p>
-                <p><strong>Email:</strong> {email}</p>
-                <p><strong>Message:</strong></p>
-                <p>{message}</p>
-            """
-        }
-        email = resend.Emails.send(params)
+        try:
+            # Send email using Resend
+            params = {
+                "from": "Contact Form <contact@obsidian.bz>",
+                "to": "michael@obsidian.bz",
+                "subject": f"New Contact Form Submission from {name}",
+                "html": f"""
+                    <h1>New Contact Form Submission</h1>
+                    <p><strong>Name:</strong> {name}</p>
+                    <p><strong>Email:</strong> {email}</p>
+                    <p><strong>Message:</strong></p>
+                    <p>{message}</p>
+                """
+            }
+            email = resend.Emails.send(params)
 
-        return {"success": True, "message": "Your message has been sent successfully!"}
-    except Exception as e:
-        print(f"Error sending email: {str(e)}")
-        return {"success": False, "message": "An error occurred while sending your message. Please try again later."}
+            return JSONResponse({"success": True, "message": "Your message has been sent successfully!"})
+        except Exception as e:
+            print(f"Error sending email: {str(e)}")
+            return JSONResponse({"success": False, "message": "An error occurred while sending your message. Please try again later."})
+    
+    # Handle GET request (e.g., redirect back to the main page)
+    return RedirectResponse(url="/")
 
 # Custom UI components
 def CustomButton(*children, **kwargs):
@@ -72,7 +77,6 @@ def CustomButton(*children, **kwargs):
     combined_class = f"{base_class} {custom_class}".strip()
     return A(*children, **kwargs, cls=combined_class)
 
-
 def CustomAvatar(**kwargs):
     return Div(cls="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full")(
         Img(src=kwargs.get('src', ''), cls="aspect-square h-full w-full"),
@@ -80,20 +84,17 @@ def CustomAvatar(**kwargs):
             cls="flex h-full w-full items-center justify-center rounded-full bg-muted")
     )
 
-
 def CustomInput(**kwargs):
     base_class = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
     custom_class = kwargs.pop('cls', '')
     combined_class = f"{base_class} {custom_class}".strip()
     return Input(**kwargs, cls=combined_class)
 
-
 def CustomTextarea(**kwargs):
     base_class = "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
     custom_class = kwargs.pop('cls', '')
     combined_class = f"{base_class} {custom_class}".strip()
     return Textarea(**kwargs, cls=combined_class)
-
 
 @rt("/")
 def get():
@@ -229,48 +230,49 @@ def get():
                                 CustomTextarea(id='message', name='message', placeholder='Enter your message', required=True, cls='bg-background text-foreground min-h-[150px]')
                             )
                         ),
-                        CustomButton('Submit', type='submit',
-                                     cls='w-full bg-primary text-primary-foreground hover:bg-primary/90')
-                    ),
-                    Div(id='form-response', cls='mt-4 text-center hidden')
+                        CustomButton('Submit', type='submit', id='submit-button',
+                                     cls='w-full bg-primary text-primary-foreground hover:bg-primary/90'),
+                        Div(id='form-message', cls='mt-4 text-center')
+                    )
                 )
             )
         ),
         Script("""
         document.addEventListener('DOMContentLoaded', function() {
-            var form = document.getElementById('contact-form');
-            var responseElement = document.getElementById('form-response');
+            const form = document.getElementById('contact-form');
+            const submitButton = document.getElementById('submit-button');
+            const formMessage = document.getElementById('form-message');
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
-                
-                var formData = new FormData(form);
-                
-                fetch('/submit-contact', {
-                    method: 'POST',
-                    body: formData
+                submitButton.disabled = true;
+                formMessage.textContent = 'Sending...';
+
+                fetch(form.action, {
+                    method: form.method,
+                    body: new FormData(form),
+                    headers: {
+                        'Accept': 'application/json'
+                    }
                 })
                 .then(response => response.json())
                 .then(data => {
-                    responseElement.textContent = data.message;
-                    responseElement.classList.remove('hidden');
-                    responseElement.classList.add(data.success ? 'text-green-600' : 'text-red-600');
-                    
+                    formMessage.textContent = data.message;
                     if (data.success) {
                         form.reset();
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    responseElement.textContent = 'An error occurred. Please try again later.';
-                    responseElement.classList.remove('hidden');
-                    responseElement.classList.add('text-red-600');
+                    formMessage.textContent = 'An error occurred. Please try again later.';
+                })
+                .finally(() => {
+                    submitButton.disabled = false;
                 });
             });
         });
         """)
     )
-
 
 # SVG Icon components
 def BotIcon(**props):
@@ -284,14 +286,12 @@ def BotIcon(**props):
         Path(d="M9 13v2")
     )
 
-
 def CodeIcon(**props):
     return Svg(**props, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewbox="0 0 24 24", fill="none",
                stroke="currentColor", strokewidth="2", strokelinecap="round", strokelinejoin="round")(
         Polyline(points="16 18 22 12 16 6"),
         Polyline(points="8 6 2 12 8 18")
     )
-
 
 def ConciergeBellIcon(**props):
     return Svg(**props, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewbox="0 0 24 24", fill="none",
@@ -302,7 +302,6 @@ def ConciergeBellIcon(**props):
         Path(d="M10 4h4")
     )
 
-
 def InfoIcon(**props):
     return Svg(**props, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewbox="0 0 24 24", fill="none",
                stroke="currentColor", strokewidth="2", strokelinecap="round", strokelinejoin="round", 
@@ -312,7 +311,6 @@ def InfoIcon(**props):
         Circle(cx="12", cy="8", r="0.75", fill="currentColor", stroke="none")
     )
 
-
 def MenuIcon(**props):
     return Svg(**props, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewbox="0 0 24 24", fill="none",
                stroke="currentColor", strokewidth="2", strokelinecap="round", strokelinejoin="round")(
@@ -321,13 +319,11 @@ def MenuIcon(**props):
         Line(x1="4", x2="20", y1="18", y2="18")
     )
 
-
 def MountainIcon(**props):
     return Svg(**props, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewbox="0 0 24 24", fill="none",
                stroke="currentColor", strokewidth="2", strokelinecap="round", strokelinejoin="round")(
         Path(d="m8 3 4 8 5-5 5 15H2L8 3z")
     )
-
 
 print("Current working directory:", os.getcwd())
 print("Static file path:", os.path.join(os.getcwd(), "static", "globals.css"))
