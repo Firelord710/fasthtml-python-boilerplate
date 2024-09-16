@@ -9,13 +9,16 @@ from starlette.requests import Request
 
 print("Current working directory:", os.getcwd())
 print("Contents of .env file:")
-with open('.env', 'r') as f:
-    print(f.read())
+try:
+    with open('.env', 'r') as f:
+        print(f.read())
+except FileNotFoundError:
+    print("File not found")
 
-load_dotenv()
-print("Environment variables after load_dotenv():")
-print(dict(os.environ))
+# Attempt to load .env file, but don't fail if it's not present
+load_dotenv(verbose=True)
 
+# Use os.environ.get() with a default value
 resend_api_key = os.environ.get("RESEND_API_KEY")
 if not resend_api_key:
     raise ValueError("RESEND_API_KEY environment variable is not set")
@@ -31,7 +34,7 @@ app, rt = fast_app(
 )
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-@rt("/submit-contact", methods=["POST"])
+@rt("/submit-contact", methods="POST")
 async def submit_contact(request: Request):
     form = await request.form()
     name = form.get("name")
@@ -45,7 +48,7 @@ async def submit_contact(request: Request):
         # Send email using Resend
         params = {
             "from": "Contact Form <contact@obsidian.bz>",
-            "to": ["michael@obsidian.bz"],
+            "to": "michael@obsidian.bz",
             "subject": f"New Contact Form Submission from {name}",
             "html": f"""
                 <h1>New Contact Form Submission</h1>
