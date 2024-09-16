@@ -36,6 +36,7 @@ app, rt = fast_app(
 )
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+
 @rt("/submit-contact", methods=["GET", "POST"])
 async def submit_contact(request: Request):
     if request.method == "POST":
@@ -67,10 +68,12 @@ async def submit_contact(request: Request):
             return JSONResponse({"success": True, "message": "Your message has been sent successfully!"})
         except Exception as e:
             print(f"Error sending email: {str(e)}")
-            return JSONResponse({"success": False, "message": "An error occurred while sending your message. Please try again later."})
-    
+            return JSONResponse(
+                {"success": False, "message": "An error occurred while sending your message. Please try again later."})
+
     # Handle GET request (e.g., redirect back to the main page)
     return RedirectResponse(url="/")
+
 
 # Custom UI components
 def CustomButton(*children, **kwargs):
@@ -79,6 +82,7 @@ def CustomButton(*children, **kwargs):
     combined_class = f"{base_class} {custom_class}".strip()
     return A(*children, **kwargs, cls=combined_class)
 
+
 def CustomAvatar(**kwargs):
     return Div(cls="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full")(
         Img(src=kwargs.get('src', ''), cls="aspect-square h-full w-full"),
@@ -86,17 +90,20 @@ def CustomAvatar(**kwargs):
             cls="flex h-full w-full items-center justify-center rounded-full bg-muted")
     )
 
+
 def CustomInput(**kwargs):
     base_class = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
     custom_class = kwargs.pop('cls', '')
     combined_class = f"{base_class} {custom_class}".strip()
     return Input(**kwargs, cls=combined_class)
 
+
 def CustomTextarea(**kwargs):
     base_class = "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
     custom_class = kwargs.pop('cls', '')
     combined_class = f"{base_class} {custom_class}".strip()
     return Textarea(**kwargs, cls=combined_class)
+
 
 @rt("/")
 def get():
@@ -220,16 +227,22 @@ def get():
                     Form(cls='mx-auto max-w-md space-y-4', id='contact-form', action='/submit-contact', method='POST')(
                         Div(cls='flex flex-col items-center')(
                             Div(cls='w-full')(
-                                Label('Name', htmlfor='name', cls='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'),
-                                CustomInput(type='text', id='name', name='name', placeholder='Enter your name', required=True, cls='bg-background text-foreground')
+                                Label('Name', htmlfor='name',
+                                      cls='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'),
+                                CustomInput(type='text', id='name', name='name', placeholder='Enter your name',
+                                            required=True, cls='bg-background text-foreground')
                             ),
                             Div(cls='w-full')(
-                                Label('Email', htmlfor='email', cls='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'),
-                                CustomInput(type='email', id='email', name='email', placeholder='Enter your email', required=True, cls='bg-background text-foreground')
+                                Label('Email', htmlfor='email',
+                                      cls='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'),
+                                CustomInput(type='email', id='email', name='email', placeholder='Enter your email',
+                                            required=True, cls='bg-background text-foreground')
                             ),
                             Div(cls='w-full')(
-                                Label('Message', htmlfor='message', cls='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'),
-                                CustomTextarea(id='message', name='message', placeholder='Enter your message', required=True, cls='bg-background text-foreground min-h-[150px]')
+                                Label('Message', htmlfor='message',
+                                      cls='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'),
+                                CustomTextarea(id='message', name='message', placeholder='Enter your message',
+                                               required=True, cls='bg-background text-foreground min-h-[150px]')
                             )
                         ),
                         CustomButton('Submit', type='submit', id='submit-button',
@@ -276,6 +289,7 @@ def get():
         """)
     )
 
+
 # SVG Icon components
 def BotIcon(**props):
     return Svg(**props, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewbox="0 0 24 24", fill="none",
@@ -288,12 +302,14 @@ def BotIcon(**props):
         Path(d="M9 13v2")
     )
 
+
 def CodeIcon(**props):
     return Svg(**props, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewbox="0 0 24 24", fill="none",
                stroke="currentColor", strokewidth="2", strokelinecap="round", strokelinejoin="round")(
         Polyline(points="16 18 22 12 16 6"),
         Polyline(points="8 6 2 12 8 18")
     )
+
 
 def ConciergeBellIcon(**props):
     return Svg(**props, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewbox="0 0 24 24", fill="none",
@@ -304,14 +320,16 @@ def ConciergeBellIcon(**props):
         Path(d="M10 4h4")
     )
 
+
 def InfoIcon(**props):
     return Svg(**props, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewbox="0 0 24 24", fill="none",
-               stroke="currentColor", strokewidth="2", strokelinecap="round", strokelinejoin="round", 
+               stroke="currentColor", strokewidth="2", strokelinecap="round", strokelinejoin="round",
                preserveAspectRatio="xMidYMid meet")(
         Circle(cx="12", cy="12", r="10"),
         Line(x1="12", y1="16", x2="12", y2="12"),
         Circle(cx="12", cy="8", r="0.75", fill="currentColor", stroke="none")
     )
+
 
 def MenuIcon(**props):
     return Svg(**props, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewbox="0 0 24 24", fill="none",
@@ -321,11 +339,13 @@ def MenuIcon(**props):
         Line(x1="4", x2="20", y1="18", y2="18")
     )
 
+
 def MountainIcon(**props):
     return Svg(**props, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewbox="0 0 24 24", fill="none",
                stroke="currentColor", strokewidth="2", strokelinecap="round", strokelinejoin="round")(
         Path(d="m8 3 4 8 5-5 5 15H2L8 3z")
     )
+
 
 print("Current working directory:", os.getcwd())
 print("Static file path:", os.path.join(os.getcwd(), "static", "globals.css"))
