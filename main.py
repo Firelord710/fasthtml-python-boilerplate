@@ -16,6 +16,8 @@ try:
 except FileNotFoundError:
     print("File not found")
 
+os.environ["RESEND_API_KEY"] = "re_hPjBZdRX_9ubXeGHBssdHzyLX5ipHUEGX"
+
 # Attempt to load .env file, but don't fail if it's not present
 load_dotenv(verbose=True)
 
