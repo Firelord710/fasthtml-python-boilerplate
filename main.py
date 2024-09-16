@@ -25,6 +25,7 @@ if not resend_api_key:
     raise ValueError("RESEND_API_KEY environment variable is not set")
 
 resend.api_key = resend_api_key
+print("Resend API key set")
 
 app, rt = fast_app(
     pico=False,
@@ -50,7 +51,7 @@ async def submit_contact(request: Request):
             # Send email using Resend
             params = {
                 "from": "Contact Form <contact@obsidian.bz>",
-                "to": "michael@obsidian.bz",
+                "to": ["michael@obsidian.bz"],
                 "subject": f"New Contact Form Submission from {name}",
                 "html": f"""
                     <h1>New Contact Form Submission</h1>
@@ -60,7 +61,8 @@ async def submit_contact(request: Request):
                     <p>{message}</p>
                 """
             }
-            email = resend.Emails.send(params)
+            email_response = resend.Emails.send(params)
+            print(email_response)
 
             return JSONResponse({"success": True, "message": "Your message has been sent successfully!"})
         except Exception as e:
