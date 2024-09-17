@@ -1,6 +1,7 @@
 import os
 from fasthtml.common import *
 from shad4fast import *
+from shad4fast import components as shad
 from fasthtml.svg import Rect, Polyline, Path, Circle, Line
 from starlette.staticfiles import StaticFiles
 from dotenv import load_dotenv
@@ -82,7 +83,7 @@ def CustomButton(*children, **kwargs):
     base_class = "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
     custom_class = kwargs.pop('cls', '')
     combined_class = f"{base_class} {custom_class}".strip()
-    return A(*children, **kwargs, cls=combined_class)
+    return shad.Button(*children, **kwargs, cls=combined_class)
 
 
 def CustomAvatar(**kwargs):
