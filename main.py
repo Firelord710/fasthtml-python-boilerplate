@@ -30,6 +30,37 @@ if not resend_api_key:
 resend.api_key = resend_api_key
 print("Resend API key set")
 
+
+# Custom UI components
+def CustomButton(*children, **kwargs):
+    base_class = "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+    custom_class = kwargs.pop('cls', '')
+    combined_class = f"{base_class} {custom_class}".strip()
+    return shad.Button(*children, **kwargs, cls=combined_class)
+
+
+def CustomAvatar(**kwargs):
+    return Div(cls="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full")(
+        Img(src=kwargs.get('src', ''), cls="aspect-square h-full w-full"),
+        Div(kwargs.get('fallback', ''),
+            cls="flex h-full w-full items-center justify-center rounded-full bg-muted")
+    )
+
+
+def CustomInput(**kwargs):
+    base_class = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    custom_class = kwargs.pop('cls', '')
+    combined_class = f"{base_class} {custom_class}".strip()
+    return Input(**kwargs, cls=combined_class)
+
+
+def CustomTextarea(**kwargs):
+    base_class = "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+    custom_class = kwargs.pop('cls', '')
+    combined_class = f"{base_class} {custom_class}".strip()
+    return Textarea(**kwargs, cls=combined_class)
+
+
 app, rt = fast_app(
     pico=False,
     hdrs=(
@@ -77,35 +108,13 @@ async def submit_contact(request: Request):
     # Handle GET request (e.g., redirect back to the main page)
     return RedirectResponse(url="/")
 
-
-# Custom UI components
-def CustomButton(*children, **kwargs):
-    base_class = "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-    custom_class = kwargs.pop('cls', '')
-    combined_class = f"{base_class} {custom_class}".strip()
-    return shad.Button(*children, **kwargs, cls=combined_class)
-
-
-def CustomAvatar(**kwargs):
-    return Div(cls="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full")(
-        Img(src=kwargs.get('src', ''), cls="aspect-square h-full w-full"),
-        Div(kwargs.get('fallback', ''),
-            cls="flex h-full w-full items-center justify-center rounded-full bg-muted")
+@rt("/toggle-menu", methods=["POST"])
+def toggle_menu():
+    return Nav(cls='flex flex-col items-center space-y-4 md:hidden', id="mobile-menu")(
+        A('Services', href='#', cls='text-sm font-medium text-[#f3f3f3] hover:underline', prefetch='{false}'),
+        A('Testimonials', href='#', cls='text-sm font-medium text-[#f3f3f3] hover:underline', prefetch='{false}'),
+        A('Contact', href='#', cls='text-sm font-medium text-[#f3f3f3] hover:underline', prefetch='{false}')
     )
-
-
-def CustomInput(**kwargs):
-    base_class = "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-    custom_class = kwargs.pop('cls', '')
-    combined_class = f"{base_class} {custom_class}".strip()
-    return Input(**kwargs, cls=combined_class)
-
-
-def CustomTextarea(**kwargs):
-    base_class = "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-    custom_class = kwargs.pop('cls', '')
-    combined_class = f"{base_class} {custom_class}".strip()
-    return Textarea(**kwargs, cls=combined_class)
 
 
 @rt("/")
@@ -117,20 +126,20 @@ def get():
                     MountainIcon(cls='h-8 w-8 text-[#f3f3f3]'),
                     Span('Obsidian Labs', cls='ml-2 text-lg font-bold text-[#f3f3f3]')
                 ),
-                Nav(cls='hidden md:flex items-center space-x-6')(
-                    A('Services', href='#', cls='text-sm font-medium text-[#f3f3f3] hover:underline',
-                      prefetch='{false}'),
-                    A('Testimonials', href='#', cls='text-sm font-medium text-[#f3f3f3] hover:underline',
-                      prefetch='{false}'),
-                    A('Contact', href='#', cls='text-sm font-medium text-[#f3f3f3] hover:underline',
-                      prefetch='{false}')
-                ),
                 Div(cls='md:hidden')(
                     CustomButton(
                         MenuIcon(cls='h-6 w-6 text-[#f3f3f3]'),
                         Span('Toggle navigation', cls='sr-only'),
-                        cls='variant-ghost size-icon'
+                        cls='variant-ghost size-icon',
+                        hx_post="/toggle-menu",
+                        hx_target="#mobile-menu",
+                        hx_swap="outerHTML"
                     )
+                ),
+                Nav(cls='hidden md:flex items-center space-x-6', id="mobile-menu")(
+                    A('Services', href='#', cls='text-sm font-medium text-[#f3f3f3] hover:underline', prefetch='{false}'),
+                    A('Testimonials', href='#', cls='text-sm font-medium text-[#f3f3f3] hover:underline', prefetch='{false}'),
+                    A('Contact', href='#', cls='text-sm font-medium text-[#f3f3f3] hover:underline', prefetch='{false}')
                 )
             )
         ),
@@ -297,7 +306,7 @@ def get():
 def BotIcon(**props):
     return Svg(**props, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewbox="0 0 24 24", fill="none",
                stroke="currentColor", strokewidth="2", strokelinecap="round", strokelinejoin="round")(
-        Path(d="M12 8V4H8"),
+        Path(D="M12 8V4H8"),
         Rect(width="16", height="12", x="4", y="8", rx="2"),
         Path(D="M2 14h2"),
         Path(D="M20 14h2"),
@@ -329,7 +338,7 @@ def InfoIcon(**props):
                stroke="currentColor", strokewidth="2", strokelinecap="round", strokelinejoin="round",
                preserveAspectRatio="xMidYMid meet")(
         Circle(cx="12", cy="12", r="10"),
-        Line(x1="12", y1="16", x2="12", y2="12"),
+        Line(x1="12", y1="16", x2="12", y2="12", stroke="currentColor"),
         Circle(cx="12", cy="8", r="0.75", fill="currentColor", stroke="none")
     )
 
