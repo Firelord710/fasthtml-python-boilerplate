@@ -299,10 +299,10 @@ def BotIcon(**props):
                stroke="currentColor", strokewidth="2", strokelinecap="round", strokelinejoin="round")(
         Path(d="M12 8V4H8"),
         Rect(width="16", height="12", x="4", y="8", rx="2"),
-        Path(d="M2 14h2"),
-        Path(d="M20 14h2"),
-        Path(d="M15 13v2"),
-        Path(d="M9 13v2")
+        Path(D="M2 14h2"),
+        Path(D="M20 14h2"),
+        Path(D="M15 13v2"),
+        Path(D="M9 13v2")
     )
 
 
@@ -317,10 +317,10 @@ def CodeIcon(**props):
 def ConciergeBellIcon(**props):
     return Svg(**props, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewbox="0 0 24 24", fill="none",
                stroke="currentColor", strokewidth="2", strokelinecap="round", strokelinejoin="round")(
-        Path(d="M3 20a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1Z"),
-        Path(d="M20 16a8 8 0 1 0-16 0"),
-        Path(d="M12 4v4"),
-        Path(d="M10 4h4")
+        Path(D="M3 20a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1Z"),
+        Path(D="M20 16a8 8 0 1 0-16 0"),
+        Path(D="M12 4v4"),
+        Path(D="M10 4h4")
     )
 
 
@@ -346,7 +346,7 @@ def MenuIcon(**props):
 def MountainIcon(**props):
     return Svg(**props, xmlns="http://www.w3.org/2000/svg", width="24", height="24", viewbox="0 0 24 24", fill="none",
                stroke="currentColor", strokewidth="2", strokelinecap="round", strokelinejoin="round")(
-        Path(d="m8 3 4 8 5-5 5 15H2L8 3z")
+        Path(D="m8 3 4 8 5-5 5 15H2L8 3z")
     )
 
 
